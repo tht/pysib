@@ -9,6 +9,7 @@ from sib import SIBManager, Device, Entity
 
 async def main():
     manager = SIBManager(
+        physical_address=('b', 50),
         channel="can0",  # Your CAN channel
         bitrate=500000,  # Your CAN bitrate
         interface="socketcand",
@@ -21,7 +22,7 @@ async def main():
     await manager.start()
 
     # Send a test message (just for demonstration)
-    await manager.send(topic_address=0x1234, priority=1, sender_pa=0x01, data=b'\x01')
+    #await manager.send(topic_address=0x1234, priority=1, sender_pa=0x01, data=b'\x01')
 
     # Keep the event loop running
     while True:

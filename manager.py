@@ -4,7 +4,7 @@ import asyncio
 from .message import Message
 
 class SIBManager:
-    def __init__(self, channel, bitrate, interface="socketcan", host=None, port=None, receive_own_messages=False):
+    def __init__(self, channel, bitrate, physical_address, interface="socketcan", host=None, port=None, receive_own_messages=False):
         """
         Initialize the SIB Manager with a CAN bus.
         """
@@ -14,6 +14,12 @@ class SIBManager:
         self.host = host
         self.port = port
         self.receive_own_messages = receive_own_messages
+
+        # Store the physical address
+        self.line, self.device = physical_address
+        if not ('a' <= self.line <= 'd' and 0 <= self.device < 64):  # Validate PA values
+            raise ValueError("Invalid physical address. Line must be a-d and device must be 0-63.")
+
         self.bus = None
         self.notifier = None
 
@@ -58,13 +64,30 @@ class SIBManager:
         print(message)
         #print(f"Arbitration ID: {msg.arbitration_id}, Data: {msg.data}")
 
-    async def send(self, topic_address, priority, sender_pa, data):
+    def _get_sender_pa(self):
         """
-        Send a message over the CAN bus.
+        Calculate the 8-bit sender physical address (PA) from line and device.
+        :return: An 8-bit integer representing the PA.
         """
-        arbitration_id = (priority << 26) | (topic_address << 8) | sender_pa
-        message = can.Message(arbitration_id=arbitration_id, data=data, is_extended_id=True)
-        
+        line_num = ord(self.line) - ord('a')
+        return (line_num << 6) | self.device
+
+    async def send(self, message: Message):
+        """
+        Send a Message object on the CAN bus.
+        """
+        if not self.bus:
+            print("Error: CAN bus is not initialized.")
+            return
+
+        # Automatically include sender PA in the message
+        message.sender_pa = self._get_sender_pa()
+        extended_id, data = message.to_raw()
+
+        # Create and send the CAN message
+        can_message = can.Message(arbitration_id=extended_id, data=data, is_extended_id=True)
+        print(f"Sending message: {can_message}")
+
         # Send the message
         await self._send_message(message)
 
