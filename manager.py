@@ -72,7 +72,14 @@ class SIBManager:
         line_num = ord(self.line) - ord('a')
         return (line_num << 6) | self.device
 
-    async def send(self, message: Message):
+    async def send(self, ta, data, prio=1):
+        """
+        Simple method for sending some data
+        """
+        addr1, addr2 = ta
+        await self.send_msg(Message(prio, addr1, addr2, self._get_sender_pa(), data))
+
+    async def send_msg(self, message: Message):
         """
         Send a Message object on the CAN bus.
         """
@@ -80,16 +87,14 @@ class SIBManager:
             print("Error: CAN bus is not initialized.")
             return
 
-        # Automatically include sender PA in the message
-        message.sender_pa = self._get_sender_pa()
-        extended_id, data = message.to_raw()
+        extended_id, msg = message.to_raw()
 
         # Create and send the CAN message
-        can_message = can.Message(arbitration_id=extended_id, data=data, is_extended_id=True)
+        can_message = can.Message(arbitration_id=extended_id, data=msg, is_extended_id=True)
         print(f"Sending message: {can_message}")
 
         # Send the message
-        await self._send_message(message)
+        await self._send_message(can_message)
 
     async def _send_message(self, message: can.Message):
         """

@@ -22,7 +22,7 @@ async def main():
     await manager.start()
 
     # Send a test message (just for demonstration)
-    #await manager.send(topic_address=0x1234, priority=1, sender_pa=0x01, data=b'\x01')
+    await manager.send((1,2), b'\x01', 1)
 
     # Keep the event loop running
     while True:
