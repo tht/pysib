@@ -11,7 +11,7 @@ from .manager import SIBManager, DeviceType
 from .can_interface import CANInterface
 from .device import Device, Entity
 from .dispatcher import Dispatcher
-from .message import Message
+from .message import Message, MessageMode
 
 # Version of the library
 __version__ = "0.1.0"

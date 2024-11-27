@@ -1,6 +1,6 @@
 from enum import Enum
 
-class Mode:
+class MessageMode:
     # Define the different modes available for the messages
     HIGH_TA = 0b00  # High priority TA mode
     MEDIUM_TA = 0b01  # Medium priority TA mode
@@ -39,7 +39,7 @@ class Mode:
 class Message:
     def __init__(self, mode: int, addr1, addr2, sender_pa: int, data=b''):
         # Initialize a Message object with mode, addresses, sender PA, and data
-        self.mode = Mode.from_value(mode)
+        self.mode = MessageMode.from_value(mode)
         self.addr1 = addr1
         self.addr2 = addr2
         self.sender_pa = sender_pa
@@ -67,7 +67,7 @@ class Message:
     def for_pa(cls, command=0, pa=None, data=None, sender_pa=None):
         # Create a PA mode message with specified command, PA, data, and sender PA
         return cls(
-            mode=Mode.PA,
+            mode=MessageMode.PA,
             addr1=command,
             addr2=pa,
             sender_pa=sender_pa,
@@ -77,13 +77,13 @@ class Message:
     @classmethod
     def from_raw(cls, extended_id: int, data: bytes):
         # Parse a raw CAN message into a Message object
-        mode = Mode.from_value((extended_id >> 27) & 0b11)
+        mode = MessageMode.from_value((extended_id >> 27) & 0b11)
         sender_pa = extended_id & 0xFF
 
-        if mode in (Mode.HIGH_TA, Mode.MEDIUM_TA, Mode.LOW_TA):
+        if mode in (MessageMode.HIGH_TA, MessageMode.MEDIUM_TA, MessageMode.LOW_TA):
             addr1 = (extended_id >> 24) & 0b111  # Main TA
             addr2 = (extended_id >> 16) & 0xFF  # Sub TA
-        elif mode == Mode.PA:
+        elif mode == MessageMode.PA:
             addr1 = (extended_id >> 24) & 0b111  # Command
             addr2 = (extended_id >> 16) & 0xFF  # PA
 
@@ -93,9 +93,9 @@ class Message:
         # Encode the Message object as raw CAN data
         extended_id = (self.mode << 27)
 
-        if self.mode in (Mode.HIGH_TA, Mode.MEDIUM_TA, Mode.LOW_TA):
+        if self.mode in (MessageMode.HIGH_TA, MessageMode.MEDIUM_TA, MessageMode.LOW_TA):
             extended_id |= (self.addr1 << 24) | (self.addr2 << 16)
-        elif self.mode == Mode.PA:
+        elif self.mode == MessageMode.PA:
             extended_id |= (self.addr1 << 24) | (self.addr2 << 16)
 
         extended_id |= self.sender_pa
@@ -107,8 +107,8 @@ class Message:
 
     def __repr__(self):
         # Return a string representation of the Message object
-        mode_str = Mode.to_string(self.mode)
-        addr_repr = f"command={self.addr1}, target_pa={self.addr2}" if self.mode == Mode.PA else f"{self.addr1}:{self.addr2}"
+        mode_str = MessageMode.to_string(self.mode)
+        addr_repr = f"command=0b{self.addr1:03b}, target_pa={self.addr2}" if self.mode == MessageMode.PA else f"target={self.addr1}:{self.addr2}"
         return (
-            f"Message(mode={mode_str}, target={addr_repr}, sender={self._get_sender_pa()}, data={self.data})"
+            f"Message(mode={mode_str}, {addr_repr}, sender={self._get_sender_pa()}, data={self.data})"
         )
