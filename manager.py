@@ -1,10 +1,32 @@
 import can
 import asyncio
+from enum import Enum
 
 from .message import Message
 
+class DeviceType(Enum):
+    SENSOR = 0
+    ACTUATOR = 1
+    CONTROLLER = 2
+    OTHER = 3
+    DEBUGGING = 4
+    HA_INTERFACE = 5
+    KNX_INTERFACE = 6
+    PROTOTYPE_BOARD = 7
+
+    @classmethod
+    def from_number(cls, number):
+        for member in cls:
+            if member.value == number:
+                return member
+        raise ValueError(f"Invalid device type number: {number}")
+
+    @classmethod
+    def to_number(cls, device_type):
+        return device_type.value
+
 class SIBManager:
-    def __init__(self, channel, bitrate, physical_address, interface="socketcan", host=None, port=None, receive_own_messages=False):
+    def __init__(self, *, channel, bitrate:int, physical_address, device_type:DeviceType, hw_revision:int, sw_revision:int, short_identifier:str, interface:str="socketcan", host=None, port=None, receive_own_messages:bool=False):
         """
         Initialize the SIB Manager with a CAN bus.
         """
@@ -19,6 +41,14 @@ class SIBManager:
         self.line, self.device = physical_address
         if not ('a' <= self.line <= 'd' and 0 <= self.device < 64):  # Validate PA values
             raise ValueError("Invalid physical address. Line must be a-d and device must be 0-63.")
+
+        # Store device information
+        self.device_type = device_type
+        self.hw_revision = hw_revision
+        self.sw_revision = sw_revision
+        self.short_identifier = short_identifier
+        if len(self.short_identifier) != 5:
+            raise ValueError("Short identifier must be a 5-byte string.")
 
         self.bus = None
         self.notifier = None
@@ -72,14 +102,14 @@ class SIBManager:
         line_num = ord(self.line) - ord('a')
         return (line_num << 6) | self.device
 
-    async def send(self, ta, data, prio=1):
+    async def send(self, *, ta, data, prio=1):
         """
         Simple method for sending some data
         """
         addr1, addr2 = ta
-        await self.send_msg(Message(prio, addr1, addr2, self._get_sender_pa(), data))
+        await self.send_msg(message=Message(prio, addr1, addr2, self._get_sender_pa(), data))
 
-    async def send_msg(self, message: Message):
+    async def send_msg(self, *, message: Message):
         """
         Send a Message object on the CAN bus.
         """
@@ -94,9 +124,9 @@ class SIBManager:
         print(f"Sending message: {can_message}")
 
         # Send the message
-        await self._send_message(can_message)
+        await self._send_message(message=can_message)
 
-    async def _send_message(self, message: can.Message):
+    async def _send_message(self, *, message: can.Message):
         """
         Helper function to send a single message over the bus.
         """

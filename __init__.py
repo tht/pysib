@@ -7,9 +7,8 @@ message encoding/decoding, device and entity management, and asynchronous commun
 """
 
 # Import key components
-from .manager import SIBManager
+from .manager import SIBManager, DeviceType
 from .can_interface import CANInterface
-#from .protocol import SIBProtocol
 from .device import Device, Entity
 from .dispatcher import Dispatcher
 from .message import Message
