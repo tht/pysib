@@ -55,7 +55,7 @@ class SIBManager:
         Callback to handle received CAN messages.
         """
         message = Message.from_raw(msg.arbitration_id, msg.data)
-        print(f"Received message: {message}")
+        print(f"SIB <: {message}")
 
         # Check if the message is directed to this device's physical address
         if self._is_message_for_this_device(message):
@@ -121,7 +121,7 @@ class SIBManager:
 
         # Create and send the CAN message
         can_message = can.Message(arbitration_id=extended_id, data=msg, is_extended_id=True)
-        print(f"Sending message: {message}")
+        print(f"> SIB: {message}")
 
         # Send the message
         await self._send_message(message=can_message)

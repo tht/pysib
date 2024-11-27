@@ -108,7 +108,7 @@ class Message:
     def __repr__(self):
         # Return a string representation of the Message object
         mode_str = MessageMode.to_string(self.mode)
-        addr_repr = f"command=0b{self.addr1:03b}, target_pa={self.addr2}" if self.mode == MessageMode.PA else f"target={self.addr1}:{self.addr2}"
+        addr_repr = f"cmd=0b{self.addr1:03b}, trg={self.addr2}" if self.mode == MessageMode.PA else f"trg={self.addr1}:{self.addr2}"
         return (
-            f"Message(mode={mode_str}, {addr_repr}, sender={self._get_sender_pa()}, data={self.data})"
+            f"Message(mde={mode_str}, {addr_repr}, snd={self._get_sender_pa()}, data={self.data})"
         )
