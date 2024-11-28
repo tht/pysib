@@ -138,7 +138,7 @@ class SIBManager:
 
     async def _announce_myself(self):
         while True:
-            await asyncio.sleep(10)
+            await asyncio.sleep(30)
             await self._send_device_info()
 
     async def start(self):

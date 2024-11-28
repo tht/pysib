@@ -13,7 +13,7 @@ async def main():
         device_type=DeviceType.DEBUGGING,  # Specify the device type
         hw_revision=0,         # Hardware revision
         sw_revision=0,         # Software revision
-        short_identifier="ABCDE",  # 5-byte short identifier
+        short_identifier="DEBUG",  # 5-byte short identifier
         channel="can0",            # Your CAN channel
         bitrate=500000,             # Your CAN bitrate
         interface="socketcand",
