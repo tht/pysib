@@ -182,3 +182,10 @@ class SIBManager:
         asyncio.create_task(self._announce_myself())
 
         print("Notifier started. Listening for messages...")
+
+    async def stop(self):
+        if self.notifier:
+            self.notifier.stop()
+        if self.bus:
+            self.bus.shutdown()
+        print("SIB manager stopped")

@@ -29,8 +29,13 @@ async def main():
     #await manager.send(ta=(1, 2), data=b'\x01', prio=1)
 
     # Keep the event loop running
-    while True:
-        await asyncio.sleep(1)
+    try:
+        while True:
+            await asyncio.sleep(1)
+    except (KeyboardInterrupt, SystemExit, asyncio.exceptions.CancelledError):
+        pass
+    finally:
+        await manager.stop()
 
 # Run the asyncio event loop
 if __name__ == "__main__":
